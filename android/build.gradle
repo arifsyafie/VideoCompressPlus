@@ -24,6 +24,38 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
+// This is the standard Flutter plugin approach
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    // Try to get flutter SDK from environment variable
+    flutterRoot = System.getenv('FLUTTER_ROOT')
+}
+
+// Use a simpler approach to Flutter dependencies instead of external gradle file
+repositories {
+    // Add Flutter's maven repository for embeddings
+    maven {
+        url "$flutterRoot/bin/cache/artifacts/engine/android-arm/maven"
+    }
+    maven {
+        url "$flutterRoot/bin/cache/artifacts/engine/android-arm64/maven"
+    }
+    maven {
+        url "$flutterRoot/bin/cache/artifacts/engine/android-x64/maven"
+    }
+    maven {
+        url "$flutterRoot/bin/cache/artifacts/engine/android-x86/maven"
+    }
+}
+
 android {
     namespace 'com.plugin.videocompress'
     compileSdkVersion 33
@@ -74,8 +106,6 @@ dependencies {
     implementation "androidx.core:core-ktx:1.9.0"
     implementation 'com.otaliastudios:transcoder:0.10.5'
     
-    // Flutter plugin dependencies (supporting both v1 and v2 plugin APIs)
-    compileOnly 'io.flutter:flutter_embedding_debug:1.0.0-3ad69d7be3a7231aab5525db322fc699f098315f'
-    compileOnly 'io.flutter:flutter_embedding_release:1.0.0-3ad69d7be3a7231aab5525db322fc699f098315f'
-    compileOnly 'io.flutter:flutter_embedding_profile:1.0.0-3ad69d7be3a7231aab5525db322fc699f098315f'
+    // Use a standard approach for Flutter plugin dependencies
+    compileOnly files("$flutterRoot/bin/cache/artifacts/engine/android-arm/flutter.jar")
 }
